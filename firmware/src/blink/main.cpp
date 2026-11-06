@@ -13,12 +13,8 @@ void loop() {
   static int last = millis();
   static bool on = true;
   if (millis()-last >= 1000){
-    if (on) {
-      digitalWrite(LED_PIN, !on);
-    } else {
-      digitalWrite(LED_PIN, on);
-    }
     on = !on;
+    digitalWrite(LED_PIN, on)
     last = millis();
     Serial.println(count);
     count = count + 1;
