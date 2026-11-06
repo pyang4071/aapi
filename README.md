@@ -16,3 +16,13 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 sudo apt install python3-picamera2               # rover only; not on PyPI
 ```
 
+## Blink LED
+To complile and upload:
+```
+uv run --group firmware pio run -d firmware -e blink -t upload
+```
+
+To monitor:
+```
+uv run --group firmware pio device monitor -b 115200
+```
