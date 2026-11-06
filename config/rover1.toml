@@ -1,0 +1,10 @@
+# Rover 1 
+role = "rover"
+net_id = 0xA7
+rover_id = 1
+tdma_slot = 0
+
+[serial]
+port = "/dev/serial0"  # Pi UART to the Heltec; /dev/ttyUSB0
+baud = 460800
+

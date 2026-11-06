@@ -1,0 +1,21 @@
+Base # Base station (Pi 3B + gateway Heltec over USB).
+role = "base"
+net_id = 0xA7
+
+[serial]
+port = "/dev/ttyUSB0"  # gateway Heltec (CP2102)
+baud = 460800
+
+[lora]
+freq_mhz = 915.0
+bw_khz = 500
+sf = 9
+cr = 5
+tx_dbm = 14
+
+[tdma]
+cycle_s = 5.0
+slot_s = 0.15
+command_window_s = 1.0
+command_retries = 3
+

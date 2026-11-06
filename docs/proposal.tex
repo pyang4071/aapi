@@ -1,0 +1,454 @@
+\documentclass[12pt, letterpaper]{article}
+% I JUST PUT A COMMENT HERE
+% --- Standard Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in, headheight=15pt]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{mathptmx} % Standard 12pt Times Roman font
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+\usepackage{longtable, booktabs, array, enumitem}
+\setlist[itemize]{noitemsep, topsep=5pt}
+\setlist[enumerate]{noitemsep, topsep=5pt}
+
+% --- Graphics & Diagrams ---
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning}
+
+% --- Header/Footer Formatting ---
+% \usepackage{fancyhdr}
+% \pagestyle{fancy}
+% \fancyhf{}
+% \rhead{Autonomous Agricultural Probing Interface -- Fall 2026}
+% \lhead{Yang, Xu, Zhu, Chan}
+% \cfoot{\thepage}
+
+% --- Title Metadata ---
+\title{\textbf{Autonomous Agricultural Probing Interface (AAPI)}}
+\author{Paddy Yang, Berry Xu, Yunwen (Wendy) Zhu, and Kenneth Chan \\
+\textit{Department of Electrical Engineering} \\
+\textit{The Cooper Union for the Advancement of Science and Art} \\
+\small{Fall 2026 Senior Projects -- Design Brief / Project Proposal}}
+\date{October 2026}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\newpage
+\setcounter{page}{1}
+
+\section{Introduction}
+Modern row-crop agriculture across mid-to-large-scale farming operations relies heavily on single, high-horsepower machines that cost upwards of \$500,000 to replace and are bound by strict manufacturer repair restrictions \cite{pirg2023}. Consequently, U.S. farmers lose an estimated \$3 billion annually to equipment downtime and pay \$1.2 billion in excess repair costs, with 53\% of growers suffering direct crop losses from breakdown delays during tight operational windows \cite{pirg2023}. Furthermore, across extensive acreage, repeated passes with heavy machinery drive severe soil degradation; while tire contact pressure dictates topsoil compaction, high total axle loads compact deep subsoil levels, resulting in persistent crop yield losses of up to 50\% \cite{shaheb2021}. 
+
+Maintaining optimal crop health requires accurate, continuous environmental data such as soil moisture and temperature \cite{instructables2017}. Traditional data collection relies on sparse manual spot-checks or localized static hardware, leaving critical micro-climate variations undetected across large field plots and leading to inefficient irrigation or unmitigated crop stress \cite{jawad2017}. The Autonomous Agricultural Probing Interface (AAPI) addresses this challenge by introducing a lightweight, autonomous ground sensing rover equipped with a deployable soil sensor probe and a plant health inspection camera, managed by a central base station over a Long Range (LoRa) radio link.
+
+\subsection{Problem Statement}
+Farmers require continuous, spatially dense soil moisture, temperature, and plant health data to manage irrigation and detect crop stress, but existing methods force a difficult trade-off. Manual checks are labor-intensive and sparse, and repeated passes with heavy machinery compact the subsoil and permanently reduce yield \cite{shaheb2021}. Static Internet of Things (IoT) sensor networks provide continuous, redundant coverage, but servicing hundreds of remote nodes in harsh or inaccessible locations is logistically prohibitive\cite{khan2015}. A single heavy autonomous ground vehicle (AGV) avoids per-node servicing but introduces a single point of failure and range limits \cite{shreyas2018}, while poor rural connectivity limits cloud-dependent tools \cite{rehman2017}. These failures are complementary: static sensing is costly to maintain across a large field, while a single mobile platform lacks redundancy and compacts the soil. What is missing is a low-maintenance, fault-tolerant way to collect soil and crop data across distributed field points that tolerates single-device failure, and adds no heavy vehicular traffic, benefiting both small-scale growers and mid-to-large row-crop farmers.
+
+
+\subsection{User and Application}
+To understand what people would expect form our system, we interviewed three stakeholders: a household gardener, a small-scale farmer, and a professor specializing in communication networks.
+
+The gardener grows a small variety of crop sin a limited space and currently relies only in a a basic sprinkler system with no tools for testing the soil or plant. They expressed interest in having a versatile robot that would be able check environmental data like temperature or soil pH, but also emphasized the safety of such system to plants specifying a desire for visual data and emergency stopping if needed.
+
+In the interview with the farmer managing a one-acre plot, they pointed their primary concern as reliability since losing data when a robot fails would hurt operations. To combat that, they suggested using multiple rovers to be able to recover from one failing rover. They also wanted the ability to schedule field surveys, control the order of locations to visit, and returning to base before the battery runs out. Finally, they asked for a dashboard that plots sensor readings along the rover's GPS path and shows photos of plant health.
+
+The professor advised that, on a farm, saving power and keeping a stable connection matter more than low delay. Since many rural areas lack reliable cellular or internet coverage, they recommended LoRa, a low-power, long-range radio technology, for linking the rovers to the base station \cite{rehman2017, jawad2017}.
+
+\section{Background Research}
+
+\subsection{Evaluation of Existing Solutions}
+
+Current technological solutions for agricultural monitoring primarily involve passive IoT sensor networks, single-unit autonomous ground vehicles (AGVs), or aerial/satellite remote sensing:
+
+\textbf{Stationary Sensor Networks:} Hobbyist builds using solar-powered micro controllers, digital temperature sensors (DS18B20) and resistive or capacitive moisture probes show that low cost sensing is feasible \cite{instructables2017}. However, deploying static sensor nodes across a multi-thousand-acre farm requires purchasing, installing, and maintaining hundreds of individual stationary units. This creates high hardware scaling costs, severe battery maintenance bottlenecks \cite{anastasi2009, jawad2017, khan2015}, electronic waste from depleted nodes, and spatial data gaps between fixed probes. Furthermore, static probes embedded in the soil must be manually uprooted prior to mechanical tilling or harvesting.
+
+\textbf{Ground Vehicles and Aerial Drones:} Prior work shows a ground vehicle with motorized, extendable soil probes can lower sensor tips directly into the dirt to sample subsoil temperature and moisture at scheduled field coordinates \cite{shreyas2018}. This replaces many fixed sensors with one machine, but it also means monitoring stops completely if that machine breaks down, which is the exact risk our farmer interviewee raised. Furthermore, heavy vehicles that repeatedly cross the same ground can also compact the soil \cite{shaheb2021}, while suffering from strict range limits when surveying vast acreage \cite{shreyas2018}. In the case of drones, while able to collect massive amounts of imagery data in a short time, they are unable to touch the soil, limiting the type of data it can collect. Federal rules also add overhead: drones must stay within the visual line of sight unless the FAA grants a waiver \cite{faa2026}.
+
+\textbf{Ethical, Regulatory, and Accessibility Considerations:} Many commercial agricultural tools run on proprietary software that limits farmers' ability to repair their equipment or control how it operates \cite{pirg2023}. Accessibility is further constrained by poor rural cellular infrastructure, which renders cloud-dependent tools unreliable \cite{instructables2017, shreyas2018, rehman2017}. Finally, regulatory and safety requirements demand that automated field equipment comply with rigorous design standards; specifically, ISO 18497:2018 governs hazard analysis, operational documentation, and safe operator supervision for highly automated agricultural machinery \cite{iso18497}.
+
+\subsection{Project Direction}
+Our interviews revealed a conflict between what users want and what our communication link can support. Both the gardener and the farmer wanted photos of their plants alongside soil readings, while the networks professor advised prioritizing a stable, low-power LoRa connection. LoRa sends data slowly, at roughly 0.3 to 27~kbps \cite{jawad2017}, which is far too slow for sending high-resolution photos from the field. The professor also suggested that a larger system could combine stationary sensors, mobile rovers that collect and relay their data, and a central LoRa base station, but warned that simulating LoRa networks in NS-3 takes significant time to debug.
+
+To work within these limits, we will build one rover and one base station, and use LoRa only for small control messages: scheduled start times, waypoints, manual overrides, and the rover's GPS location and status. The rover stores its soil readings and plant photos on board, then uploads them over a faster local connection when it returns to the base station to charge. This design does not introduce new sensing or communication technology. Instead, it combines existing components into a system for small growers, who are poorly served by current options. Stationary sensors measure soil but cannot show the plants, drones can photograph plants but cannot measure soil, and prior probing robots rely on a single unit \cite{shreyas2018}. Our rover collects soil readings and photos at the same locations, works without cloud services or cellular coverage, and keeps the grower in control through the scheduling, override, and tracking features our interviewees said they needed before trusting an autonomous robot. Finally, we will design our communication protocol and simulation so that a spare rover can be added later, allowing monitoring to continue if one robot fails.
+
+\section{Functional Decomposition}
+
+Figure~\ref{fig:functional} divides our system into four subsystems: the base station, the rover, the soil sensor probe, and the camera. Black arrows show the flow of energy and red arrows show the flow of data. Within each subsystem, black boxes handle energy, red boxes handle data, and blue boxes are physical actions, such as driving the rover or mounting a sensor.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{images/senior proj functional decomp.png}
+    \caption{Functional decomposition of the AAPI system, showing energy (black) and data (red) flows between the base station, rover, soil sensor probe, and camera.}
+    \label{fig:functional}
+\end{figure}
+
+\textbf{Energy flow.} Energy enters the rover through its charging input when it is docked at the base station. The rover stores this energy in its battery and regulates it to power its motors, radio, soil probe, and camera. The probe and camera each regulate the power they receive from the rover to match their own needs. The base station stores and regulates its own energy to run its computing and communication functions.
+
+\textbf{Data flow.} A mission begins when the base station computes the rover's next target location and sends it to the rover. The rover drives to that location and collects data from its two instruments. The soil probe inserts into the ground, takes readings, retracts, and sends those readings to the rover. The camera photographs the plant, compresses the image to save storage, and sends it to the rover. Once the mission is complete, the rover drives back to the base station and transfers its stored data, which the base station collects and holds for display on the dashboard.
+
+\textbf{Material flow.} The only material our system interacts with is soil. The probe displaces soil as it is inserted at each waypoint and leaves it in place when it retracts, so no soil is removed from the field.
+
+\subsection{Subsystem Descriptions}
+
+\textbf{Base Station.} The base station hosts the dashboard where the grower sets mission schedules (for example, a 5:00~AM start), enters the order of waypoints, tracks the rover's location, and sends manual override or on/off commands. It sends these commands to the rover over LoRa, supplies charging power through its docking contacts, and receives the rover's stored soil readings and photos once it docks. This would be a laptop device or raspberry pi.
+
+\textbf{Rover.} The rover drives a lightweight four-wheel chassis with geared DC motors and wheel encoders, visiting waypoints in the order the grower sets. Its onboard computer saves each soil reading and photo with its current location to local storage, sends its location and status to the base station over LoRa, and monitors the battery so it can return to the dock before running out of charge. Photos are never sent over LoRa; they transfer only when the rover is docked. The rover's battery supplies power to the probe and camera.
+
+\textbf{Soil Sensor Probe.} A motorized vertical mechanism lowers the probe into the soil at each waypoint to measure moisture and temperature, then retracts it before the rover moves on, similar to the approach in \cite{shreyas2018}.
+
+\textbf{Camera.} A camera aimed at the crop row photographs the plants at each waypoint. Photos are compressed before storage to reduce upload time at the dock.
+
+
+\section{Technical Requirements}
+
+\subsection{Functional Requirements}
+Table~\ref{tab:func_req} lists the functional requirements and constraints for each block in our functional decomposition (Figure~\ref{fig:functional}).
+
+{\footnotesize
+\setlength{\extrarowheight}{2pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.2cm} >{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{5.6cm} >{\raggedright\arraybackslash}p{4.2cm}@{}}
+    \toprule
+    \textbf{Subsystem} & \textbf{Block} & \textbf{Requirement} & \textbf{Constraint} \\
+    \midrule[0.8pt]
+    \endfirsthead
+    
+    \toprule
+    \textbf{Subsystem} & \textbf{Block} & \textbf{Requirement} & \textbf{Constraint} \\
+    \midrule[0.8pt]
+    \endhead
+    
+    \midrule
+    \multicolumn{4}{r}{\emph{Continued on next page}} \\
+    \endfoot
+    
+    \bottomrule
+    \bottomrule
+    \addlinespace[4pt]
+    \caption{Functional requirements and constraints for each block.}
+    \label{tab:func_req} \\
+    \endlastfoot
+    
+    % ---------- Base station ----------
+    \textbf{Base station} & Store Energy & Shall power the base station throughout field missions. & Operate $\geq$ 24~h without interruption. \\
+    \cmidrule[0.2pt](l){2-4}
+     & Regulate Energy & Shall supply stable power to the base station electronics and charging dock. & Output within $\pm$5\% of rated voltage. \\
+    \cmidrule[0.2pt](l){2-4}
+     & Compute New Target Location & Shall select the rover's next waypoint from the grower's ordered list and send it to the rover. & Command sent within 5~s of the previous waypoint's completion. \\
+    \cmidrule[0.2pt](l){2-4}
+     & Collect Data & Shall receive all stored readings and photos from the docked rover. & 100\% of files verified by checksum; transfer done within 10~min. \\
+    \cmidrule[0.2pt](l){2-4}
+     & Hold Data & Shall store readings and photos with GPS location and timestamp for display on the dashboard. & Retain $\geq$ 30 days of mission data. \\
+    \midrule
+    
+    % ---------- Rover ----------
+    \textbf{Rover} & Recharge & Shall accept charging power from the base station dock. & Full charge within 4~h. \\
+    \cmidrule[0.2pt](l){2-4}
+     & Store Energy & Shall power the rover for a complete survey. & $\geq$ 2~h of operation per charge. \\
+    \cmidrule[0.2pt](l){2-4}
+     & Regulate Energy & Shall supply stable power to the motors, computer, radio, probe, and camera. & Logic voltages within $\pm$5\% of rated values. \\
+    \cmidrule[0.2pt](l){2-4}
+     & Move to Target Location & Shall drive to each waypoint in the order set by the grower. & Stop within 3~m of the waypoint. \\
+    \cmidrule[0.2pt](l){2-4}
+     & Collect Data from Sensor and Camera & Shall save each soil reading and photo with its GPS location and timestamp. & Zero missing records per mission. \\
+    \cmidrule[0.2pt](l){2-4}
+     & Move Back to Base & Shall return to the dock when the mission ends or the battery runs low. & Begin return at $\leq$ 25\% charge. \\
+    \cmidrule[0.2pt](l){2-4}
+     & Communicate Data & Shall transfer all stored readings and photos to the base station once docked. & 100\% of files verified by checksum; transfer done within 10~min. \\
+    \midrule
+    
+    % ---------- Sensor probe ----------
+    \textbf{Sensor probe} & Regulate Energy & Shall supply stable power to the probe actuator and sensors. & Within the sensors' rated voltage range. \\
+    \cmidrule[0.2pt](l){2-4}
+     & Sensor on Rover & Shall stay securely mounted while the rover drives. & No loosening after a full survey on uneven ground. \\
+    \cmidrule[0.2pt](l){2-4}
+     & Insert Probe & Shall push the probe into the soil to the measurement depth. & Depth of 5--10~cm. \\
+    \cmidrule[0.2pt](l){2-4}
+     & Collect Data & Shall measure soil moisture and temperature and convert the readings to digital values. & Temperature accurate to $\pm$0.5~\textdegree C; moisture repeatable within $\pm$5\%. \\
+    \cmidrule[0.2pt](l){2-4}
+     & Retract Probe & Shall fully withdraw the probe before the rover moves. & Rover cannot drive until retraction is confirmed. \\
+    \cmidrule[0.2pt](l){2-4}
+     & Communicate Data & Shall send each reading to the rover's computer. & Delivered within 5~s of measurement. \\
+    \midrule
+    
+    % ---------- Camera ----------
+    \textbf{Camera} & Regulate Energy & Shall supply stable power to the camera. & Within the camera's rated voltage range. \\
+    \cmidrule[0.2pt](l){2-4}
+     & Camera on Rover & Shall stay aimed at the crop row while the rover drives. & Target plant fully in frame at each waypoint. \\
+    \cmidrule[0.2pt](l){2-4}
+     & Take Photo of Plant & Shall photograph the plant at each waypoint. & One in-focus photo per waypoint. \\
+    \cmidrule[0.2pt](l){2-4}
+     & Compress Photo & Shall reduce file size while keeping leaf detail visible. & $\leq$ 500~KB per photo. \\
+    \cmidrule[0.2pt](l){2-4}
+     & Communicate Data & Shall pass each photo to the rover's computer for storage. & Saved within 5~s of capture. \\
+\end{longtable}}
+
+\subsection{Design Requirements, Codes, and Engineering Standards}
+
+{\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.10\textwidth} >{\raggedright\arraybackslash}p{0.13\textwidth} >{\raggedright\arraybackslash}p{0.24\textwidth} >{\raggedright\arraybackslash}p{0.24\textwidth} >{\raggedright\arraybackslash}p{0.23\textwidth}@{}}
+\toprule
+\textbf{Subsystem} & \textbf{Block} & \textbf{Constraint} & \textbf{Reason} & \textbf{Code/Standard} \\
+\midrule[0.8pt]
+\endfirsthead
+
+\toprule
+\textbf{Subsystem} & \textbf{Block} & \textbf{Constraint} & \textbf{Reason} & \textbf{Code/Standard} \\
+\midrule[0.8pt]
+\endhead
+
+\midrule
+\multicolumn{5}{r}{\emph{Continued on next page}} \\
+\endfoot
+
+\bottomrule
+\addlinespace[4pt]
+\caption{Design constraints for each subsystem.}
+\label{tab:design_constraints} \\
+\endlastfoot
+
+% ---------- Base station ----------
+\textbf{Base station} & Store Energy & Operate $\geq$ 24~h on wall power & The base station must stay available whenever the rover is in the field & IEC 62368-1 (safety of ICT equipment and power adapters) \\
+\cmidrule[0.2pt](l){2-5}
+ & Compute New Target Location & Send waypoints over LoRa in the 902--928~MHz band; $\geq$ 90\% packet delivery at 200~m & Commands must reach the rover across the field using legal, license-free radio & FCC 47 CFR \S15.247 (unlicensed 915~MHz transmitters) \\
+\cmidrule[0.2pt](l){2-5}
+ & Collect Data & 100\% of transferred files verified by CRC-32 checksum & Corrupted readings or photos are useless for analysis & CRC-32 as defined in IEEE 802.3 \\
+\cmidrule[0.2pt](l){2-5}
+ & Hold Data & Store readings as CSV with ISO 8601 timestamps; retain $\geq$ 30 days & Standard formats let growers open data in any spreadsheet tool & RFC 4180 (CSV); ISO 8601 (date and time format) \\
+\midrule
+
+% ---------- Rover ----------
+\textbf{Rover} & Recharge & Full charge in $\leq$ 4~h within the cell manufacturer's current limits & Fast enough for a second daily survey without overheating cells & IEC 62133-2 (safety of lithium cells and batteries) \\
+\cmidrule[0.2pt](l){2-5}
+ & Store Energy & $\geq$ 2~h of operation per charge & Enough to survey a one-acre plot and return to the dock & IEC 62133-2 (safety of lithium cells and batteries) \\
+\cmidrule[0.2pt](l){2-5}
+ & Regulate Energy & Fuse rated at 125\% of maximum load current & Protects the computer and sensors from short circuits & None (design practice) \\
+ & & Physical E-stop cuts motor power within 0.5~s & Lets anyone near the rover stop it immediately & ISO 18497 (safety of highly automated agricultural machines) \\
+\cmidrule[0.2pt](l){2-5}
+ & Move to Target Location & Stop within 3~m of each waypoint; top speed $\leq$ 1~m/s & Matches consumer GPS accuracy; low speed limits harm to people, plants, and the rover & ISO 18497 (safety of highly automated agricultural machines) \\
+\cmidrule[0.2pt](l){2-5}
+ & Move Back to Base & Begin return at $\leq$ 25\% charge & Leaves a reserve for the longest return path plus obstacles & None (design practice) \\
+\cmidrule[0.2pt](l){2-5}
+ & Communicate Data & Transfer one mission's data in $\leq$ 10~min over a wired dock connection & Photos are too large for LoRa, so they upload only when docked & USB 2.0 Specification (USB-IF) \\
+\midrule
+
+% ---------- Sensor probe ----------
+\textbf{Sensor probe} & Insert Probe & Probe and wiring sealed to IP67; depth 5--10~cm & The probe is pushed into wet, muddy soil at every waypoint & IEC 60529 (IP code for enclosures) \\
+\cmidrule[0.2pt](l){2-5}
+ & Collect Data & Temperature $\pm$0.5~\textdegree C; moisture within $\pm$5\% after calibration & Readings must be accurate enough to guide watering decisions & ASTM D2216 (lab method for soil water content, used for calibration) \\
+\cmidrule[0.2pt](l){2-5}
+ & Retract Probe & Rover drive locked until probe retraction is confirmed & Driving with the probe extended would bend or break it & ISO 13849-1 (safety-related parts of control systems) \\
+\midrule
+
+% ---------- Camera ----------
+\textbf{Camera} & Camera on Rover & Camera housing sealed to $\geq$ IP65 & Exposed to dust, irrigation spray, and rain & IEC 60529 (IP code for enclosures) \\
+\cmidrule[0.2pt](l){2-5}
+ & Compress Photo & JPEG format, $\leq$ 500~KB per photo & Keeps upload time short while preserving leaf detail & ISO/IEC 10918-1 (JPEG) \\
+
+\end{longtable}
+}
+
+Table~\ref{tab:design_constraints} lists the design constraints for each subsystem along with the relevant codes and standards. Beyond these technical limits, our project faces several broader constraints. Our budget is limited to \$1000, which rules out costly components. We must deliver a working prototype by the end of the semester, so we are building one rover rather than a full fleet. Finally, to address the right-to-repair concerns raised in our background research \cite{pirg2023}, our system stores all data locally, requires no cloud subscription, and uses off-the-shelf parts that growers can replace themselves.
+
+\subsection{Design Criteria}
+We will compare design options using the following criteria, listed in order of priority.
+
+\begin{enumerate}
+    \item \textbf{Energy per sample (quantitative):} The rover's battery energy used per waypoint, in joules, measured over a full mission. Lower is better. The images are only uploaded at the dock.
+    \item \textbf{User control (quantitative and qualitative):} The time between a grower's stop or override command and the rover stopping, where shorter is better. The interface must be easy to use.
+    \item \textbf{Data quality (quantitative):} The percentage of planned waypoints that produce both a valid soil reading and a usable photo. Higher is better.
+    \item \textbf{Cost (quantitative):} The total parts cost of one rover. Lower is better, since our target users are small growers or users whom need multiple models
+\end{enumerate}
+
+\subsection{Safety Review}
+Key hazards include mechanical pinch/puncture risks from the motorized soil probe actuator, exposed charging contacts at the dock, and autonomous vehicle runaway. Controls include a top-mounted hardware E-stop button, software manual override over LoRa, relay-isolated dock charging terminals that only energize when the rover is physically seated, and a thermally stable $\text{LiFePO}_4$ battery pack with an integrated BMS. See Appendix \ref{app:safety} for the complete Safety Review table.
+
+
+\section{Proposed Work}
+
+\subsection{Prototype and Build Plan}
+
+We will build one rover and one base station with a charging dock as a prototype. The rover starts from a four-wheel-drive chassis kit with geared DC motors and wheel encoders. AN ESP32-S3 micro controller handles motor control, the probe actuator, limit switch, and LoRa radio, while a Raspberry Pi captures and compress plant photos, stores all data on its SD card, and uploads it when docks. We will use a 12 V linear actuator to push the soil prove into the ground at each waypoint. We plan to 3D print the sensor and camera mounts and laser cut the electronics enclosure panels.
+
+The base station is a second Raspberry Pi connected to a 915 MHz LoRa module. This device will run the dashboard and send mission commands to the rover. While charging the rover, the rover would also transfer its information and images to the secondary Raspberry Pi.
+
+\subsection{Bill of Materials}
+Table \ref{tab:bom} below lists the preliminary Bill of Materials for constructing one prototype rover and one base station. 
+
+\begin{table}[htbp]
+    \centering
+    \footnotesize
+    \setlength{\extrarowheight}{2pt}
+    \begin{tabularx}{\textwidth}{@{}X l c r r@{}}
+        \toprule
+        \textbf{Component Description} & \textbf{Subsystem} & \textbf{Qty} & \textbf{Unit (\$)} & \textbf{Total (\$)} \\
+        \midrule[0.8pt]
+        Raspberry Pi 4B / 5 (4GB) w/ 64GB High-Endurance SD & Rover \& Base Compute & 2 & 65.00 & 130.00 \\
+        \cmidrule[0.2pt]{1-5}
+        ESP32-S3 DevKitC Microcontroller & Real-Time Control & 2 & 10.00 & 20.00 \\
+        \cmidrule[0.2pt]{1-5}
+        SX1262 / RFM95W 915\,MHz LoRa Transceiver + Antenna & LoRa Command Link & 2 & 18.00 & 36.00 \\
+        \cmidrule[0.2pt]{1-5}
+        4WD Robot Chassis Kit w/ 12V Geared Encoded Motors & Rover Drivetrain & 1 & 65.00 & 65.00 \\
+        \cmidrule[0.2pt]{1-5}
+        12V Mini Linear Actuator (100\,mm stroke, 150\,N) & Z-Axis Probe Actuator & 1 & 35.00 & 35.00 \\
+        \cmidrule[0.2pt]{1-5}
+        Soil Moisture \& Temperature Sensor Probe (DS18B20/RS-485) & Soil Sensing & 1 & 35.00 & 35.00 \\
+        \cmidrule[0.2pt]{1-5}
+        Raspberry Pi Camera Module 3 (1080p+ Autofocus) & Plant Health Vision & 1 & 35.00 & 35.00 \\
+        \cmidrule[0.2pt]{1-5}
+        Dual H-Bridge DC Motor Driver (TB6612FNG / L298N) & Motor/Actuator Drive & 2 & 8.00 & 16.00 \\
+        \cmidrule[0.2pt]{1-5}
+        BN-880 GPS Module w/ Compass (UART/I2C) & Navigation \& Geotagging & 1 & 22.00 & 22.00 \\
+        \cmidrule[0.2pt]{1-5}
+        12V 6Ah LiFePO$_4$ Battery Pack w/ Integrated BMS & Rover Power Supply & 1 & 40.00 & 40.00 \\
+        \cmidrule[0.2pt]{1-5}
+        14.6V 4A LiFePO$_4$ Charger \& Dock Contact Plates & Base Charging Dock & 1 & 45.00 & 45.00 \\
+        \cmidrule[0.2pt]{1-5}
+        Custom Interface PCB, Buck Converters \& Passives & Electrical Integration & 1 & 34.00 & 34.00 \\
+        \cmidrule[0.2pt]{1-5}
+        Weatherproof Enclosure, E-Stop Switch \& PETG Filament & Mechanical / Safety & 1 & 40.00 & 40.00 \\
+        \midrule
+        \multicolumn{4}{r}{\textbf{Estimated total cost}} & \textbf{553.00} \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Preliminary bill of materials for one prototype rover and one base station with charging dock.}
+    \label{tab:bom}
+\end{table}
+
+\subsection{Experimental Testing and Evaluation Plan}
+\subsection{Experimental Testing and Evaluation Plan}
+Our prototype is meant to answer four questions: whether a lightweight rover can reliably insert a probe into real soil, whether it can navigate and dock without help, whether separating LoRa commands from docked uploads meets our energy and data goals, and whether growers would trust and use it. Table~\ref{tab:tests} lists the tests we will run, each tied to a requirement in Table~\ref{tab:func_req}.
+
+\begin{table}[htbp]
+    \centering
+    \footnotesize
+    \setlength{\extrarowheight}{2pt}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.18\textwidth} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}p{0.28\textwidth}@{}}
+    \toprule
+    \textbf{Test} & \textbf{Method} & \textbf{Pass criterion} \\
+    \midrule[0.8pt]
+    LoRa range and commands & Send start, waypoint, and override commands from 50, 100, and 200~m outdoors; count commands received and executed. & $\geq$ 90\% delivered at 200~m; every received command executed. \\
+    \cmidrule[0.2pt]{1-3}
+    Probe insertion & Insert the probe into soil bins at dry, moist, and wet conditions; measure the depth reached and watch for wheel lift. & 5--10~cm depth in all three conditions with no wheel lift. \\
+    \cmidrule[0.2pt]{1-3}
+    Sensor accuracy & Compare moisture readings against oven-dried soil samples and temperature readings against a reference thermometer. & Moisture within $\pm$5\%; temperature within $\pm$0.5~\textdegree C. \\
+    \cmidrule[0.2pt]{1-3}
+    Navigation & Drive to marked waypoints; measure the distance from each stop to its marker. & Within 15~cm at every waypoint depending on scale. \\
+    \cmidrule[0.2pt]{1-3}
+    Data logging & Run a full mission; check that every waypoint has a soil reading and a photo, each tagged with location data. & Zero missing or untagged records. \\
+    \cmidrule[0.2pt]{1-3}
+    Battery endurance & Run missions from a full charge; log the battery level throughout. & $\geq$ 2~h of operation; return begins at 25\% charge. \\
+    \cmidrule[0.2pt]{1-3}
+    Return, dock, and upload & Lower the low-battery threshold to trigger a return mid-route; repeat 20 times and check charging and file transfer. & $\geq$ 18 of 20 docks succeed; 100\% of files pass checksum; upload $\leq$ 10~min. \\
+    \cmidrule[0.2pt]{1-3}
+    Stop and override & Press the E-stop and send remote stop commands while driving; time how long the rover takes to stop. & Stops within 0.5~s (E-stop) and 2~s (remote). \\
+    \cmidrule[0.2pt]{1-3}
+    User evaluation & Demonstrate the dashboard and scheduler to our gardener and farmer interviewees. & Both set up a mission without help. \\
+    \bottomrule
+    \end{tabularx}
+    \caption{Planned tests and pass criteria.}
+    \label{tab:tests}
+\end{table}
+
+\subsection{Anticipated Challenges and Mitigation}
+\begin{itemize}
+    \item \textbf{Probe Insertion Reaction Force:} Our actuator can exert more force than the rover weighs, so in hard soil it may lift the rover instead of inserting the probe. \textit{Mitigation:} Measure the force needed to insert the probe in soil bins before final assembly, then add ballast or limit actuator current as needed, and use a slim, tapered probe tip.
+    \item \textbf{Positioning:} Location data via GPS or odme itself may not be accurate enough. \textit{Mitigation:} Build funnel-shaped guide rails into the dock so the rover is pushed into alignment during its final approach, and test docking repeatedly before integrating the upload script.
+    \item \textbf{Weatherproofing:} 3D-printed enclosures are difficult to seal against water and dust. \textit{Mitigation:} Use a purchased weatherproof enclosure for the main electronics and reserve printed parts for mounts.
+    \item \textbf{Late-Fall Field Testing:} Cold or frozen soil later in the semester could limit outdoor probe and battery testing. \textit{Mitigation:} Schedule outdoor tests early and use indoor soil bins as a backup.
+\end{itemize}
+
+% ============================================================================
+% 6. TIMELINE AND PROJECT MANAGEMENT
+% ============================================================================
+\section{Timeline and Project Management}
+
+\subsection{Academic Year Gantt Chart}
+Table \ref{tab:gantt} outlines the project timeline across the Fall 2026 and Spring 2027 semesters (\textbf{X} = Completed, \textbf{/} = In Progress, \textbf{O} = Planned).
+
+\begin{table}[htbp]
+\centering
+\footnotesize
+\begin{tabularx}{\textwidth}{X | c c c c | c c c c c | l}
+\toprule
+\textbf{Project Task / Activity} & \textbf{Sep} & \textbf{Oct} & \textbf{Nov} & \textbf{Dec} & \textbf{Jan} & \textbf{Feb} & \textbf{Mar} & \textbf{Apr} & \textbf{May} & \textbf{Lead(s)} \\
+\midrule
+1.1 Background Research \& Interviews & \textbf{X} & \textbf{X} & & & & & & & & All \\
+1.2 Project Proposal \& Requirements & & \textbf{X} & & & & & & & & All \\
+1.3 BOM Finalization \& Part Ordering & & \textbf{/} & \textbf{O} & & & & & & & All \\
+\midrule
+2.1 Determine Tech stack \& Test with Simulated DataF & & \textbf{/} & \textbf{O} & \textbf{O} & & & & & & Kenneth, Paddy \\
+2.2 Soil Probe \& Z-Axis Actuator Rig & & \textbf{/} & \textbf{O} & \textbf{O} & & & & & & Berry, Wendy \\
+2.3 Rover Chassis \& Camera Caching & & \textbf{/} & \textbf{O} & \textbf{O} & & & & & & Berry, Wendy \\
+2.4 Fall Subsystem Demo \& Report & & & & \textbf{O} & & & & & & All \\
+\midrule
+3.1 Base Charging Dock \& PCB Build & & & & & \textbf{O} & \textbf{O} & & & & Berry, Wendy \\
+3.2 Full Single-Rover Integration & & & & & \textbf{O} & \textbf{O} & \textbf{O} & & & Kenneth, Paddy \\
+3.3 Scheduler GUI, Location Plotting, \& Docked Data Offload & & & & & & \textbf{O} & \textbf{O} & & & Kenneth, Paddy \\
+\midrule
+4.1 Outdoor Probing \& Docking Trials & & & & & & & \textbf{O} & \textbf{O} & & All \\
+4.2 Fault/Override \& Power Optimization & & & & & & & & \textbf{O} & \textbf{O} & All \\
+4.3 Final Report \& Senior Presentation & & & & & & & & & \textbf{O} & All \\
+\bottomrule
+\end{tabularx}
+\caption{2026--2027 Senior Project Schedule (\textbf{X} = Completed, \textbf{/} = In Progress, \textbf{O} = Planned)}
+\label{tab:gantt}
+\end{table}
+
+\subsection{Task Descriptions and Team Responsibilities}
+\begin{itemize}
+    \item \textbf{Tasks 1.1--1.3 (Research, Stakeholder Discovery, Proposal, \& BOM):} \textit{Completed / In Progress (All Members).} Completed literature review, interviewed the gardener, small-scale farmer, and communication networks expert, synthesized findings, and finalized the single-rover prototype scope.
+    \item \textbf{Task 2.1 (Determine Tech stack \& Test with Simulated Data):} \textit{In Progress (Kenneth Chan \& Paddy Yang).} Formalize the tech stack for both the rover and base station. Test algorithms on test data before porting to actual hardware.
+    \item \textbf{Task 2.2 (Soil Probe \& Z-Axis Actuator Rig):} \textit{In Progress (Berry Xu \& Yunwen Zhu).} Construct the motorized linear Z-axis probe mount and interface the moisture/temperature soil probe with the microcontroller.
+    \item \textbf{Task 2.3--2.4 (Rover Chassis, Camera Caching, \& Fall Demo):} \textit{In Progress (All Members).} Assemble the 4WD rover drivetrain, integrate GPS waypoint logging, and configure the camera to capture and store geotagged plant photos locally.
+    \item \textbf{Task 3.1--3.2 (Base Charging Dock, PCB, \& Full Rover Integration):} \textit{Not Started (All Members).} Fabricate the base station charging dock, design the power/interface PCB, and integrate the actuator, probe, camera, and LoRa radio onto the single rover prototype.
+    \item \textbf{Task 3.3 (Scheduler GUI, Location Plotting, \& Docked Data Offload):} \textit{Not Started (Kenneth Chan \& Paddy Yang).} Build the user dashboard featuring the customizable mission scheduler (e.g., 5:00 AM start), manual override controls, automated docked photo/data upload, and location plots.
+    \item \textbf{Task 4.1--4.3 (Field Testing, Optimization, \& Final Deliverables):} \textit{Not Started (All Members).} Conduct end-to-end outdoor soil probing, return-to-dock charging, and data offload tests, concluding with the final Senior Project report and presentation.
+\end{itemize}
+
+\subsection{Project Management Plan and Tools}
+Our team coordinates daily via Discord and Microsoft Teams, using Overleaf and Google Drive to maintain living project documentation. All embedded C++/Arduino/ESP-IDF firmware, NS-3 simulation scripts, Python camera/offload services, and CAD files are version-controlled in a shared GitHub repository. We hold weekly team sync meetings and track milestone progress using a shared Kanban board.
+
+
+\newpage
+\bibliographystyle{IEEEtran}
+\bibliography{ref}
+
+\newpage
+\appendix
+\section{Senior Project Safety Review Form}
+
+The safety review form is completed and attached separately. Some safety risk are presented below in \ref{tab:safety}
+
+\begin{table}[htbp]
+    \centering
+    \footnotesize
+    \setlength{\extrarowheight}{2pt}
+    \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash\bfseries}p{0.20\textwidth} >{\raggedright\arraybackslash}p{0.28\textwidth} >{\raggedright\arraybackslash}X@{}}
+    \toprule
+    \textbf{Hazard category} & \textbf{Identified risk} & \textbf{Engineering and procedural controls} \\
+    \midrule[0.8pt]
+    Mechanical: pinch and puncture & The probe actuator and rotating drivetrain wheels can pinch or puncture hands. & Keep hands clear during actuation; install a shroud around the probe guide; wire a hardware E-stop on the top cover that directly disconnects the 12~V motor and actuator power. \\
+    \cmidrule[0.2pt]{1-3}
+    Electrical: battery and dock & Exposed dock charging contacts, or a short circuit in the 12~V battery pack. & Use LiFePO$_4$ cells, which are thermally stable; power the dock contacts through a relay that switches on only after the rover is detected in the dock; protect the battery with a BMS and an inline blade fuse. \\
+    \cmidrule[0.2pt]{1-3}
+    Autonomous outdoor operation & The rover drives away unintentionally because of a GPS error or a software crash. & Provide remote stop and on/off commands over LoRa, as our stakeholders requested; during supervised tests, send a heartbeat every 5~s and stop the motors if three consecutive heartbeats are missed; keep a team member within reach of the E-stop at all times, following ISO 18497 \cite{iso18497}. \\
+    \cmidrule[0.2pt]{1-3}
+    Fabrication and shop safety & Solder and flux fumes, 3D printing fumes, and drilling or cutting the chassis. & Solder only under fume extractors in the EE lab; complete the Cooper Union machine shop safety orientation before using drill presses or saws; wear ANSI Z87.1 safety glasses. \\
+    \bottomrule
+    \end{tabularx}
+    \caption{Project hazards and safety controls.}
+    \label{tab:safety}
+\end{table}
+
+\end{document}
