@@ -1,29 +1,27 @@
 #include <Arduino.h>
 
-constexpr LED_PIN = 35;
+constexpr int LED_PIN = 35;
 
-int count = 0
+int count = 0;
 
-voud setup() {
+void setup() {
   Serial.begin(115200);
   pinMode(LED_PIN, OUTPUT);
 }
 
 void loop() {
-  Serial.println(count);
-  count = count + 1;
-
   static int last = millis();
-  static bool on = true
-  if (millis()-last >= 1){
-    if (on == True) {
-      digitalWrite(LED_PIN, LOW);
-      on = false;
+  static bool on = true;
+  if (millis()-last >= 1000){
+    if (on) {
+      digitalWrite(LED_PIN, !on);
     } else {
-      digitalWrite(LED_PIN, HIGH);
-      on = true;
+      digitalWrite(LED_PIN, on);
     }
-    digitalWrite(LED_PIN, HIGH);
+    on = !on;
+    last = millis();
+    Serial.println(count);
+    count = count + 1;
   }
 }
 
