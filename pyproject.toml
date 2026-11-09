@@ -32,6 +32,7 @@ sim = [
 aapi-rover = "aapi.apps.rover_main:main"
 aapi-base = "aapi.apps.base_main:main"
 aapi-sim = "aapi.sim.run:main"
+aapi-chat = "aapi.apps.chat:main"
 
 [dependency-groups]  # developer tools
 dev = [
@@ -42,6 +43,7 @@ dev = [
     "pytest>=9.2.0",
     "pytest-cov>=7.1.0",
     "ruff>=0.17.4",
+    "types-pyserial>=3.5.0.20261104",
 ]
 firmware = [
     "platformio>=6.2.0",
