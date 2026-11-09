@@ -26,3 +26,15 @@ To monitor:
 ```
 uv run --group firmware pio device monitor -b 115200
 ```
+
+## Chat demo (two Pi + ESP32 pairs, over LoRa)
+Flash the forwarder onto each ESP32 (from its Pi):
+```
+uv run --group firmware pio run -d firmware -e gateway -t upload
+```
+
+Then on each Pi:
+```
+uv run aapi-chat --port /dev/ttyUSB0
+```
+Type a line and it appears on the other Pi. Close any `pio device monitor` first: only one program can hold the port.
