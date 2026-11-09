@@ -18,7 +18,7 @@ MAX_TEXT_LEN = 200  # LoRa packet holds 255 bytes
 
 def show(line: str) -> None:
     """Print a line from the reader thread"""
-    print(f"Recieved: {line}\n> ", end="", flush=True)
+    print(f"\nRecieved: {line}\n> ", end="", flush=True)
 
 
 def receive_loop(port: serial.Serial, stop: threading.Event) -> None:
@@ -29,7 +29,7 @@ def receive_loop(port: serial.Serial, stop: threading.Event) -> None:
         chunk = port.read(256)  # waits at most the port timeout; b"" if nothing came
         for msg_type, payload in decoder.feed(chunk):
             if msg_type == TEXT:
-                show(f"< {payload.decode(errors='replace')}")
+                show(f"{payload.decode(errors='replace')}")
         if decoder.bad_frames != bad_seen:
             bad_seen = decoder.bad_frames
             show(f"[dropped a corrupted frame, {bad_seen} so far]")
