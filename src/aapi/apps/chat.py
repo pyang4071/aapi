@@ -18,7 +18,7 @@ MAX_TEXT_LEN = 200  # LoRa packet holds 255 bytes
 
 def show(line: str) -> None:
     """Print a line from the reader thread"""
-    print(f"Recieved: \r{line}\n> ", end="", flush=True)
+    print(f"Recieved: {line}\n> ", end="", flush=True)
 
 
 def receive_loop(port: serial.Serial, stop: threading.Event) -> None:
