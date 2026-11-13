@@ -48,6 +48,7 @@ constexpr uint8_t BROADCAST = 0xFF;
 constexpr size_t CRC_LEN = 2;
 constexpr size_t MAX_LORA_PACKET = 255;
 constexpr size_t LORA_RX_HEADER_LEN = 3;
+constexpr size_t LORA_HEADER_LEN = 5;  // messages.HEADER_LEN
 constexpr size_t MAX_PAYLOAD_LEN = 258;
 constexpr size_t MAX_BODY_LEN = 261;
 // COBS-encoded body, without the 0x00 end marker

@@ -1,8 +1,4 @@
-"""LoRa packets (architecture.md §4): the 5-byte header plus one class per packet type.
-
-Stdlib only, no I/O. Only the types something uses so far are here; add the rest as chunks need
-them (one class + one entry in _CLASSES each).
-"""
+"""LoRa packets: the 5-byte header plus one class per packet type."""
 
 from dataclasses import dataclass
 from typing import ClassVar, Self
@@ -22,7 +18,7 @@ def _check_u8(name: str, value: int) -> None:
 
 @dataclass(frozen=True)
 class Header:
-    """§4.1. `type` is a plain int: the rover reads it before it knows which class applies."""
+    """`type` is a plain int: the rover reads it before it knows which class applies."""
 
     net_id: int
     type: int
@@ -48,7 +44,7 @@ class Header:
 
 @dataclass(frozen=True)
 class Packet:
-    """Fields every packet has. The type byte comes from the subclass's TYPE, never a field."""
+    """Fields every packet has. The type byte comes from the subclass's TYPE"""
 
     TYPE: ClassVar[LoraType]
 
@@ -90,7 +86,7 @@ class Text(Packet):
 
 @dataclass(frozen=True)
 class Stop(Packet):
-    """Base -> rover(s): stop now. The rover ESP32 acts on it itself (§5.1)."""
+    """Base -> rover(s): stop now. The rover ESP32 acts on it itself"""
 
     TYPE = LoraType.STOP
     reason: int

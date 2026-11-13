@@ -5,7 +5,7 @@ from pathlib import Path
 
 from aapi.protocol import framing, ids
 from aapi.protocol.ids import Address
-from aapi.protocol.messages import Packet, Resume, Stop, Text
+from aapi.protocol.messages import HEADER_LEN, Packet, Resume, Stop, Text
 from aapi.protocol.serial_msgs import LoraRx
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -114,6 +114,7 @@ def render_ids() -> str:
         f"constexpr size_t CRC_LEN = {framing.CRC_len};",
         f"constexpr size_t MAX_LORA_PACKET = {framing.MAX_LORA_PACKET};",
         f"constexpr size_t LORA_RX_HEADER_LEN = {framing.LORA_RX_HEADER_LEN};",
+        f"constexpr size_t LORA_HEADER_LEN = {HEADER_LEN};  // messages.HEADER_LEN",
         f"constexpr size_t MAX_PAYLOAD_LEN = {framing.MAX_PAYLOAD_LEN};",
         f"constexpr size_t MAX_BODY_LEN = {framing.MAX_BODY_LEN};",
         "// COBS-encoded body, without the 0x00 end marker",
