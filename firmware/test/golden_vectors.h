@@ -192,3 +192,32 @@ static const uint8_t GOLDEN_LORA_RX_PAYLOAD[] = {
     0x77, 0xFF, 0xCE, 0xA5, 0x02, 0x00, 0x0A, 0xFF, 0x00,
 };
 static const size_t GOLDEN_LORA_RX_PAYLOAD_LEN = 9;
+
+// LoRa packets built by messages.py; the header fields are what parse_header must return
+struct GoldenPacket {
+  const char* label;
+  const uint8_t* bytes;
+  size_t len;
+  uint8_t net_id, type, src, dst, seq;
+};
+
+static const uint8_t GOLDEN_NET_ID = 0xA5;
+static const uint8_t GP_STOP_ROVER3[] = {
+    0xA5, 0x27, 0x00, 0x03, 0x07, 0x01,
+};
+static const uint8_t GP_STOP_ALL[] = {
+    0xA5, 0x27, 0x00, 0xFF, 0x08, 0x02,
+};
+static const uint8_t GP_RESUME_ROVER3[] = {
+    0xA5, 0x39, 0x00, 0x03, 0x09,
+};
+static const uint8_t GP_TEXT_FROM_ROVER3[] = {
+    0xA5, 0xB4, 0x03, 0x00, 0xC8, 0x68, 0x69,
+};
+static const GoldenPacket GOLDEN_PACKETS[] = {
+    {"stop_rover3", GP_STOP_ROVER3, 6, 0xA5, 0x27, 0x00, 0x03, 0x07},
+    {"stop_all", GP_STOP_ALL, 6, 0xA5, 0x27, 0x00, 0xFF, 0x08},
+    {"resume_rover3", GP_RESUME_ROVER3, 5, 0xA5, 0x39, 0x00, 0x03, 0x09},
+    {"text_from_rover3", GP_TEXT_FROM_ROVER3, 7, 0xA5, 0xB4, 0x03, 0x00, 0xC8},
+};
+static const size_t GOLDEN_PACKET_COUNT = sizeof(GOLDEN_PACKETS) / sizeof(GOLDEN_PACKETS[0]);
