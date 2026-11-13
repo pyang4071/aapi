@@ -56,3 +56,24 @@ default-groups = ["dev"]
 requires = ["uv_build>=0.8.15,<0.9.0"]
 build-backend = "uv_build"
 
+
+[tool.mypy]
+strict = true
+files = ["src", "tools", "tests"]
+mypy_path = "src"
+
+[tool.importlinter]
+root_package = "aapi"
+
+[[tool.importlinter.contracts]]
+name = "Lower layers never import higher ones (architecture.md §10)"
+type = "layers"
+# (name) = layer that doesn't exist yet; a | b = same level, must not import each other
+layers = [
+    "aapi.apps",
+    "(aapi.web)",
+    "(aapi.sim) | (aapi.drivers)",
+    "(aapi.hal)",
+    "(aapi.core)",
+    "aapi.protocol",
+]
