@@ -21,8 +21,10 @@ constexpr uint8_t HW_STATUS = 0x93;
 
 // Frame limits (framing.py)
 constexpr size_t CRC_LEN = 2;
-constexpr size_t MAX_PAYLOAD_LEN = 300;
-constexpr size_t MAX_BODY_LEN = 303;
+constexpr size_t MAX_LORA_PACKET = 255;
+constexpr size_t LORA_RX_HEADER_LEN = 3;
+constexpr size_t MAX_PAYLOAD_LEN = 258;
+constexpr size_t MAX_BODY_LEN = 261;
 // COBS-encoded body, without the 0x00 end marker
-constexpr size_t MAX_ENCODED_LEN = 305;
+constexpr size_t MAX_ENCODED_LEN = 263;
 }  // namespace aapi

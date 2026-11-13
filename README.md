@@ -32,7 +32,7 @@ uv run --group firmware pio device monitor -b 115200
 ```
 
 ### Chat demo (two Pi + ESP32 pairs, over LoRa)
-Flash the forwarder onto each ESP32 (from its Pi):
+Flash the gateway firmware onto each ESP32 (from its Pi):
 ```
 uv run --group firmware pio run -d firmware -e gateway -t upload
 ```

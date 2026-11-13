@@ -3,7 +3,9 @@
 import binascii
 
 CRC_len = 2
-MAX_PAYLOAD_LEN = 300  # bytes (placeholder)
+MAX_LORA_PACKET = 255  # SX1262 length register is one byte
+LORA_RX_HEADER_LEN = 3  # rssi i16 + snr i8, in front of the packet
+MAX_PAYLOAD_LEN = LORA_RX_HEADER_LEN + MAX_LORA_PACKET  # biggest payload
 MAX_BODY_LEN = 1 + MAX_PAYLOAD_LEN + CRC_len  # type + payload + crc
 MAX_ENCODED_LEN = (
     MAX_BODY_LEN + MAX_BODY_LEN // 254 + 1

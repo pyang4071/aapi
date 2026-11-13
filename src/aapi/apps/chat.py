@@ -1,7 +1,8 @@
 """Chat demo: type a line, it goes Pi -> ESP32 -> LoRa -> ESP32 -> Pi and is printed there.
 
 Run the same program on both Pis: `uv run aapi-chat --port /dev/ttyUSB0`.
-The ESP32s only forward the bytes between 0x00 markers; framing + CRC happen here, end to end.
+Each ESP32 gateway decodes the serial frame and transmits only the text (LORA_TX); the
+receiving gateway sends it up as LORA_RX with RSSI/SNR.
 """
 
 import argparse
@@ -10,11 +11,12 @@ import threading
 
 import serial
 
-from aapi.protocol.framing import FrameDecoder, encode_frame
+from aapi.protocol import ids
+from aapi.protocol.framing import MAX_LORA_PACKET, FrameDecoder, encode_frame
+from aapi.protocol.serial_msgs import DecodeError, LoraRx
 
-TEXT = 1  # message type
-BAUD = 115200
-MAX_TEXT_LEN = 200  # LoRa packet holds 255 bytes
+BAUD = 460800  # must match the gateway firmware
+MAX_TEXT_LEN = MAX_LORA_PACKET  # the text is the whole LoRa packet
 
 
 def show(line: str) -> None:
@@ -30,8 +32,14 @@ def receive_loop(port: serial.Serial, stop: threading.Event) -> None:
     while not stop.is_set():
         chunk = port.read(256)  # waits at most the port timeout; b"" if nothing came
         for msg_type, payload in decoder.feed(chunk):
-            if msg_type == TEXT:
-                show(f"{payload.decode(errors='replace')}")
+            if msg_type != ids.LORA_RX:
+                continue
+            try:
+                rx = LoraRx.decode(payload)
+            except DecodeError:
+                continue
+            text = rx.packet.decode(errors="replace")
+            show(f"{text}  (RSSI {rx.rssi_dbm} dBm, SNR {rx.snr_db:.2f} dB)")
         if decoder.bad_frames != bad_seen:
             bad_seen = decoder.bad_frames
             show(f"[dropped a corrupted frame, {bad_seen} so far]")
@@ -62,7 +70,7 @@ def main() -> None:
             if len(data) > MAX_TEXT_LEN:
                 print(f"too long: {len(data)} bytes (max {MAX_TEXT_LEN})")
                 continue
-            port.write(encode_frame(TEXT, data))
+            port.write(encode_frame(ids.LORA_TX, data))
     except (KeyboardInterrupt, EOFError):  # Ctrl+C or Ctrl+D
         print()
     finally:
