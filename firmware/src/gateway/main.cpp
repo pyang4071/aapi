@@ -62,7 +62,7 @@ void setup() {
 
 // A good frame came in over serial. payload() is only valid until the next feed().
 void handle_frame() {
-  if (decoder.type() != aapi::ids::LORA_TX) {
+  if (decoder.type() != aapi::serial::LORA_TX) {
     return;  // gateway has no motors or sensors: other types are ignored
   }
   size_t len = decoder.payload_len();
@@ -91,7 +91,7 @@ void forward_packet() {
                                   aapi::snr_to_qdb(radio.getSNR()), pkt, len, payload,
                                   sizeof(payload));
   uint8_t frame[aapi::MAX_FRAME_LEN];
-  size_t m = aapi::encode_frame(aapi::ids::LORA_RX, payload, n, frame, sizeof(frame));
+  size_t m = aapi::encode_frame(aapi::serial::LORA_RX, payload, n, frame, sizeof(frame));
   if (n > 0 && m > 0) {
     Serial.write(frame, m);
   }

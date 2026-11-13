@@ -32,7 +32,7 @@ def receive_loop(port: serial.Serial, stop: threading.Event) -> None:
     while not stop.is_set():
         chunk = port.read(256)  # waits at most the port timeout; b"" if nothing came
         for msg_type, payload in decoder.feed(chunk):
-            if msg_type != ids.LORA_RX:
+            if msg_type != ids.SerialType.LORA_RX:
                 continue
             try:
                 rx = LoraRx.decode(payload)
@@ -70,7 +70,7 @@ def main() -> None:
             if len(data) > MAX_TEXT_LEN:
                 print(f"too long: {len(data)} bytes (max {MAX_TEXT_LEN})")
                 continue
-            port.write(encode_frame(ids.LORA_TX, data))
+            port.write(encode_frame(ids.SerialType.LORA_TX, data))
     except (KeyboardInterrupt, EOFError):  # Ctrl+C or Ctrl+D
         print()
     finally:

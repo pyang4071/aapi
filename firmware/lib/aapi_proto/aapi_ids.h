@@ -6,8 +6,8 @@
 #include <stdint.h>
 
 namespace aapi {
-namespace ids {
-// Serial message types (ids.py)
+// Serial frame types, byte 0 of a frame (ids.SerialType)
+namespace serial {
 constexpr uint8_t HEARTBEAT = 0x1E;
 constexpr uint8_t DRIVE = 0x27;
 constexpr uint8_t SERVO = 0x39;
@@ -17,7 +17,32 @@ constexpr uint8_t CONFIG = 0x6C;
 constexpr uint8_t ODOM = 0x72;
 constexpr uint8_t LORA_RX = 0x8D;
 constexpr uint8_t HW_STATUS = 0x93;
-}  // namespace ids
+constexpr uint8_t STOP_CLEAR = 0xAA;
+}  // namespace serial
+
+// LoRa packet types, byte 1 of the header (ids.LoraType)
+namespace lora {
+constexpr uint8_t BEACON = 0x1E;
+constexpr uint8_t STOP = 0x27;
+constexpr uint8_t RESUME = 0x39;
+constexpr uint8_t MISSION_LOAD = 0x4B;
+constexpr uint8_t WAYPOINTS = 0x55;
+constexpr uint8_t MISSION_START = 0x6C;
+constexpr uint8_t MISSION_ABORT = 0x72;
+constexpr uint8_t RETURN_HOME = 0x8D;
+constexpr uint8_t TELEOP = 0x93;
+constexpr uint8_t SET_PARAM = 0xAA;
+constexpr uint8_t TEXT = 0xB4;
+constexpr uint8_t STATUS = 0xC6;
+constexpr uint8_t ACK = 0xD8;
+constexpr uint8_t EVENT = 0xE1;
+}  // namespace lora
+
+// LoRa src/dst addresses (ids.Address)
+namespace addr {
+constexpr uint8_t BASE = 0x00;
+constexpr uint8_t BROADCAST = 0xFF;
+}  // namespace addr
 
 // Frame limits (framing.py)
 constexpr size_t CRC_LEN = 2;
