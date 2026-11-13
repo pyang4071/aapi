@@ -2,8 +2,9 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
+from aapi.protocol.errors import DecodeError, EncodeError
 from aapi.protocol.framing import LORA_RX_HEADER_LEN, MAX_LORA_PACKET
-from aapi.protocol.serial_msgs import DecodeError, EncodeError, LoraRx
+from aapi.protocol.serial_msgs import LoraRx
 
 
 @given(

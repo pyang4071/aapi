@@ -2,15 +2,8 @@
 
 from dataclasses import dataclass
 
+from aapi.protocol.errors import DecodeError, EncodeError
 from aapi.protocol.framing import LORA_RX_HEADER_LEN, MAX_LORA_PACKET
-
-
-class EncodeError(Exception):
-    """A field is out of range for its wire format."""
-
-
-class DecodeError(Exception):
-    """Payload bytes don't form a valid message."""
 
 
 @dataclass(frozen=True)

@@ -12,8 +12,9 @@ import threading
 import serial
 
 from aapi.protocol import ids
+from aapi.protocol.errors import DecodeError
 from aapi.protocol.framing import MAX_LORA_PACKET, FrameDecoder, encode_frame
-from aapi.protocol.serial_msgs import DecodeError, LoraRx
+from aapi.protocol.serial_msgs import LoraRx
 
 BAUD = 460800  # must match the gateway firmware
 MAX_TEXT_LEN = MAX_LORA_PACKET  # the text is the whole LoRa packet
