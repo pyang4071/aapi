@@ -28,7 +28,6 @@ void fail_forever() {
 }
 
 void stop_motors() {
-  continue;
 }
 
 void setup() {
